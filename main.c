@@ -31,32 +31,48 @@ int main(int argc, char *argv[])
         if (opcode == NULL || opcode[0] == '#')
             continue;
 
-        if (strcmp(opcode, "push") == 0)
-            push(&stack, line_number);
-        else if (strcmp(opcode, "pall") == 0)
-            pall(&stack, line_number);
-        else if (strcmp(opcode, "pint") == 0)
-            pint(&stack, line_number);
-        else if (strcmp(opcode, "pop") == 0)
-            pop(&stack, line_number);
-        else if (strcmp(opcode, "swap") == 0)
-            swap(&stack, line_number);
-        else if (strcmp(opcode, "add") == 0)
-            add(&stack, line_number);
-        else if (strcmp(opcode, "nop") == 0)
-            nop(&stack, line_number);
-        else
-        {
-            fprintf(stderr, "L%d: unknown instruction %s\n", line_number, opcode);
-            fclose(file);
-            free(line);
-            free_stack(stack);
-            exit(EXIT_FAILURE);
-        }
+        execute_opcode(opcode, &stack, line_number);
     }
 
     fclose(file);
     free(line);
     free_stack(stack);
     return (EXIT_SUCCESS);
+}
+
+void execute_opcode(char *opcode, stack_t **stack, unsigned int line_number)
+{
+    instruction_t instructions[] = {
+        {"push", push},
+        {"pall", pall},
+        {"pint", pint},
+        {"pop", pop},
+        {"swap", swap},
+        {"add", add},
+        {"nop", nop},
+        {"sub", sub},
+        {"div", div_op},
+        {"mul", mul},
+        {"mod", mod},
+        {"pchar", pchar},
+        {"pstr", pstr},
+        {"rotl", rotl},
+        {"rotr", rotr},
+        {"stack", stack_op},
+        {"queue", queue},
+        {NULL, NULL}
+    };
+    int i;
+
+    for (i = 0; instructions[i].opcode != NULL; i++)
+    {
+        if (strcmp(opcode, instructions[i].opcode) == 0)
+        {
+            instructions[i].f(stack, line_number);
+            return;
+        }
+    }
+
+    fprintf(stderr, "L%d: unknown instruction %s\n", line_number, opcode);
+    exit(EXIT_FAILURE);
 }
